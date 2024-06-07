@@ -45,5 +45,48 @@ def most_expensive_baked_good():
     most_expensive_serialized = most_expensive.to_dict()
     return make_response( most_expensive_serialized,   200  )
 
+@app.route('/baked_goods', methods = ['POST'])
+def post_baked_good():
+    if request.method == 'POST':
+        new_baked_good = BakedGood(
+            bakery_id=request.form.get("bakery_id"),
+            created_at=request.form.get("created_at"),
+            name=request.form.get("name"),
+            price=request.form.get("price"),
+            updated_at=request.form.get("updated_at"),
+        )
+        db.session.add(new_baked_good)
+        db.session.commit()
+         
+        baked_good_dict = new_baked_good.to_dict()
+
+        response = make_response(
+            baked_good_dict,
+            201
+        )
+
+        return response
+    
+@app.route('/bakeries/<int:id>', methods = ['PATCH'])
+def patch_bakery_name(id):
+    bakery = db.session.get(Bakery, id)
+    print(bakery)
+    if request.method == 'PATCH':
+        print(bakery)
+        name = request.form.get('name')
+        if name:
+            bakery.name = name
+            db.session.commit()
+            return jsonify(bakery.to_dict()), 200
+    
+@app.route('/baked_goods/<int:id>', methods = ['DELETE'])   
+def delete_baked_good(id): 
+    baked_good = db.session.get(BakedGood, id)
+    if request.method == 'DELETE':
+        print(baked_good)
+        db.session.delete(baked_good)
+        db.session.commit()
+        return jsonify('record was successfully deleted', 204)
+    
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
